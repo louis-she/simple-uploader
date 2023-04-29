@@ -33,16 +33,18 @@ func TestMain(m *testing.M) {
 	logrus.SetLevel(logrus.DebugLevel)
 	viper.SetDefault("uploader.slice_cache_dir", "/tmp/golang_test_dev/cache")
 	viper.SetDefault("uploader.upload_dir", "/tmp/golang_test_dev/data")
+	viper.SetDefault("uploader.metafile_dir", "/tmp/golang_test_dev/meta")
 
 	os.MkdirAll(viper.GetString("uploader.slice_cache_dir"), 0755)
 	os.MkdirAll(viper.GetString("uploader.upload_dir"), 0755)
+	os.MkdirAll(viper.GetString("uploader.metafile_dir"), 0755)
 
 	r = gin.New()
 	controllers.Attach(r, "/")
 
 	m.Run()
 	// remove all temp files
-	logrus.Debug("remove test directory")
+	logrus.Debug("remove all test directory")
 	os.RemoveAll("/tmp/golang_test_dev")
 	os.Exit(0)
 }
@@ -240,6 +242,9 @@ func TestFileUploadSingle(t *testing.T) {
 	sha1Sum = sha1.Sum(serverFileContent)
 	sha1HexServer := hex.EncodeToString(sha1Sum[:])
 	assert.Equal(sha1Hex, sha1HexServer)
+
+	metaFilePath := path.Join(viper.GetString("uploader.metafile_dir"), responseMeta.FileId+".meta.json")
+	assert.FileExists(metaFilePath)
 }
 
 func TestFileUploadWithPrefix(t *testing.T) {

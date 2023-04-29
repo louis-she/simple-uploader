@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -66,21 +67,25 @@ type UploadParams struct {
 
 func (f *FileController) Meta(c *gin.Context) {
 	// get FileId from query
+	var meta FileMeta
+	var metaFile string
 	fileId := c.Param("id")
 	cacheDir := path.Join(viper.GetString("uploader.slice_cache_dir"), fileId)
+
 	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
-		f.Write(c, nil, 404, 0, "")
-		return
+		// cache not exists, find from uploader
+		metaFile = path.Join(viper.GetString("uploader.metafile_dir"), fileId+".meta.json")
+	} else {
+		// read meta in cache
+		metaFile = path.Join(cacheDir, "meta.json")
 	}
 
-	// read meta file
-	metaFile := path.Join(cacheDir, "meta.json")
 	if _, err := os.Stat(metaFile); os.IsNotExist(err) {
+		logrus.Warningf("meta file not found: %s", metaFile)
 		f.Write(c, nil, 404, 0, "")
 		return
 	}
 
-	var meta FileMeta
 	content, err := ioutil.ReadFile(metaFile)
 	if err != nil {
 		logrus.Errorf("failed to read meta file: %v", err)
@@ -173,8 +178,8 @@ func (f *FileController) Upload(c *gin.Context) {
 		f.Write(c, nil, 500, 0, "")
 		return
 	}
-	filesLock[params.FileId].Unlock()
 
+	filesLock[params.FileId].Unlock()
 	// go over the slices in meta, and check if all slices are uploaded
 	for _, slice := range serverFileMeta.Slices {
 		if slice.Status != 1 {
@@ -197,7 +202,19 @@ func (f *FileController) Upload(c *gin.Context) {
 		return
 	}
 	defer destFile.Close()
-	for _, slice := range serverFileMeta.Slices {
+	metaFilePath := path.Join(viper.GetString("uploader.metafile_dir"), params.FileId+".meta.json")
+	destMetaFile, err := os.Create(metaFilePath)
+	if err != nil {
+		logrus.Errorf("failed to create dest meta file: %v", err)
+		f.Write(c, nil, 500, 0, "")
+		return
+	}
+	defer destMetaFile.Close()
+
+	io.Copy(destMetaFile, bytes.NewReader(content))
+
+	for i := 0; i < len(serverFileMeta.Slices); i++ {
+		slice := serverFileMeta.Slices[strconv.Itoa(i)]
 		sliceFilePath := path.Join(sliceDir, serverFileMeta.FileName+"."+slice.Id+"."+slice.Sha1+".slice")
 		sliceFile, err := os.Open(sliceFilePath)
 		if err != nil {

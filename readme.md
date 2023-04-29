@@ -20,6 +20,26 @@ controllers.Attach(r, "/")
 
 # Clients
 
-- [ ] Browser JavaScript
+## Browser JavaScript
+
+```TypeScript
+import SimpleUploader from "./simple_uploader";
+
+// file = ...
+
+const uploader = new SimpleUploader(file, {
+  endpoint: "/files",
+  chunkSize: 10 * 1024 ** 2,  // 10 MB
+  onProgress: (progress) => {
+    // ...
+  },
+});
+await uploader.upload();
+```
+
+For a more specific example, please see the development example [`main.ts`](/clients/browser_javascript/src/main.ts)
+
+TODO:
+
 - [ ] Python
 - [ ] Go
