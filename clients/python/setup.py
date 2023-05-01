@@ -1,4 +1,3 @@
-"""Python setup.py for project_name package"""
 import io
 import os
 from setuptools import find_packages, setup
@@ -24,7 +23,7 @@ def read_requirements(path):
 
 setup(
     name="simple_uploader",
-    version=read("simple_uploader", "VERSION"),
+    version="0.0.1",
     description="Simple uploader python client",
     url="https://github.com/louis-she/simple-uploader",
     long_description=read("../../README.md"),

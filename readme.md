@@ -75,4 +75,4 @@ pnpm run dev
 
 ## TODO
 
-- [ ] Current slice uploading
+- [ ] Concurrent slice uploading
