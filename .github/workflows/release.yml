@@ -1,0 +1,30 @@
+name: Release
+on:
+  release:
+    types: [created]
+  push:
+    branches: [ "main" ]
+jobs:
+  build_browser_javascript:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+      - name: build
+        run: |
+          pnpm install
+          pnpm build
+        working-directory: ./clients/browser_javascript
+      - name: publishing 
+        run: npm publish
+        working-directory: ./clients/browser_javascript
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
