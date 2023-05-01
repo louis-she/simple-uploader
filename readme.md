@@ -26,8 +26,17 @@ All the clients expose very similar APIs.
 
 ### Browser JavaScript
 
+**Installation**
+
+```bash
+npm config set @louis-she:registry https://npm.pkg.github.com/
+npm install @louis-she/simple-uploader
+```
+
+**Usage**
+
 ```TypeScript
-import SimpleUploader from "./simple_uploader";
+import SimpleUploader from "@louis-she/simple-uploader";
 
 // file = ...
 
@@ -47,10 +56,18 @@ For a more specific example, please see the development example [`main.ts`](/cli
 
 ### Python
 
+**Installation**
+
+```bash
+pip3 install git+https://github.com/louis-she/simple-uploader#subdirectory=clients/python
+```
+
+**Usage**
+
 ```python
 from simple_uploader import SimpleUploader
 
-su = SimpleUploader("/Users/louisshe/Downloads/屏幕录制2023-04-17 14.55.37.mov")
+su = SimpleUploader("/some/large/file/path")
 su.upload()
 res = su.checksum()
 print(res)
