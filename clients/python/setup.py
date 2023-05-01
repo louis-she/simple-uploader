@@ -23,7 +23,7 @@ def read_requirements(path):
 
 setup(
     name="simple_uploader",
-    version="0.0.3",
+    version="0.0.4",
     description="Simple uploader python client",
     url="https://github.com/louis-she/simple-uploader",
     long_description=read("../../README.md"),
