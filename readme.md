@@ -20,7 +20,11 @@ controllers.Attach(r, "/")
 
 # Clients
 
-## Browser JavaScript
+Only the Browser JavaScript client and Python client are provided. For Golang, see [`test`](/controllers/file_test.go).
+
+All the clients expose very similar APIs.
+
+### Browser JavaScript
 
 ```TypeScript
 import SimpleUploader from "./simple_uploader";
@@ -35,11 +39,40 @@ const uploader = new SimpleUploader(file, {
   },
 });
 await uploader.upload();
+const res = await uploader.checksum()
+console.log(res)
 ```
 
 For a more specific example, please see the development example [`main.ts`](/clients/browser_javascript/src/main.ts)
 
-TODO:
+### Python
 
-- [ ] Python
-- [ ] Go
+```python
+from simple_uploader import SimpleUploader
+
+su = SimpleUploader("/Users/louisshe/Downloads/屏幕录制2023-04-17 14.55.37.mov")
+su.upload()
+res = su.checksum()
+print(res)
+```
+
+### Development Client
+
+1. Start mockserver
+
+```bash
+# in clients directory
+go run ./mockserver
+```
+
+2. (For JS) Start dev server
+
+```bash
+# in clients/browser_javascript
+pnpm isntall
+pnpm run dev
+```
+
+## TODO
+
+- [ ] Current slice uploading
