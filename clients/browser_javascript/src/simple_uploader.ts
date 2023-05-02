@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import camecaseKeys from "camelcase-keys";
 
 interface Progress {
@@ -58,19 +58,23 @@ type SimpleUploaderOptions = {
   chunkSize: number;
   endpoint: string;
   onProgress?: (progress: Progress) => void;
-}
+  requestOptions?: AxiosRequestConfig;
+};
 
 export default class SimpleUploader {
   meta?: FileMeta | null;
   metaKey: string;
-  public options: SimpleUploaderOptions
+  public options: SimpleUploaderOptions;
 
   constructor(public file: File, options: Partial<SimpleUploaderOptions>) {
-    this.options = Object.assign({
-      chunkSize: 1024 * 1024 * 10,
-      endpoint: "/files",
-      onProgress: undefined,
-    }, options)
+    this.options = Object.assign(
+      {
+        chunkSize: 1024 * 1024 * 10,
+        endpoint: "/files",
+        onProgress: undefined,
+      },
+      options
+    );
     this.meta = null;
     this.metaKey = `file_meta_${this.file.name}_${this.file.size}`;
     this.clearMeta();
@@ -94,12 +98,16 @@ export default class SimpleUploader {
 
   async upload() {
     if (!this.meta) {
-      const response = await axios.post<Response<FileMeta>>(this.options.endpoint, {
-        file_name: this.file.name,
-        file_type: this.file.type,
-        file_size: this.file.size,
-        chunk_size: this.options.chunkSize,
-      });
+      const response = await axios.post<Response<FileMeta>>(
+        this.options.endpoint,
+        {
+          file_name: this.file.name,
+          file_type: this.file.type,
+          file_size: this.file.size,
+          chunk_size: this.options.chunkSize,
+        },
+        this.options.requestOptions
+      );
       if (response.status !== 200) {
         throw new Error(response.statusText);
       }
@@ -114,7 +122,7 @@ export default class SimpleUploader {
         const response = await this.uploadSlice(slice.sliceId);
         if (response.code == 206 || response.code == 200) {
           this.meta.slices[slice.sliceId].status = 1;
-          this.saveMeta()
+          this.saveMeta();
         }
         if (this.options.onProgress) {
           this.options.onProgress({
@@ -150,7 +158,10 @@ export default class SimpleUploader {
       `${this.options.endpoint}/${this.meta!.fileId}/upload`,
       formData,
       {
+        ...this.options.requestOptions,
         headers: {
+          ...(this.options.requestOptions &&
+            this.options.requestOptions.headers),
           "Content-Type": "multipart/form-data",
         },
       }
@@ -171,7 +182,8 @@ export default class SimpleUploader {
 
   async checksum(): Promise<CheckResult> {
     const serverMeta = await axios.get<Response<FileMeta>>(
-      `${this.options.endpoint}/${this.meta!.fileId}/meta`
+      `${this.options.endpoint}/${this.meta!.fileId}/meta`,
+      this.options.requestOptions
     );
     let checkResult: CheckResult = {
       successCount: 0,
