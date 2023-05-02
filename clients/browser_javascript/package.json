@@ -1,6 +1,6 @@
 {
   "name": "@louis-she/simple-uploader",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "main": "./dist/simple_uploader.umd.cjs",
   "module": "./dist/simple_uploader.js",
@@ -30,5 +30,10 @@
   "dependencies": {
     "axios": "^1.4.0",
     "camelcase-keys": "^8.0.2"
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ]
 }

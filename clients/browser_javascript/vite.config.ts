@@ -9,6 +9,7 @@ export default defineConfig({
     },
   },
   build: {
+    target: ["es2019"],
     lib: {
       entry: resolve(__dirname, "src/simple_uploader.ts"),
       name: "simple_uploader",
