@@ -28,7 +28,7 @@ func (b *FileController) PathPrefix() string {
 	return "/files"
 }
 
-func (b *FileController) AddRoutes(r *gin.Engine, prefix string) {
+func (b *FileController) AddRoutes(r gin.IRoutes, prefix string) {
 	if prefix == "" {
 		prefix = "/"
 	}

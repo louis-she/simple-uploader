@@ -13,7 +13,7 @@ type Response struct {
 	Data    json.RawMessage `json:"data"`
 }
 
-func Attach(r *gin.Engine, prefix string) {
+func Attach(r gin.IRoutes, prefix string) {
 	fileController := &FileController{}
 	fileController.AddRoutes(r, prefix)
 }
