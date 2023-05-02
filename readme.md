@@ -1,6 +1,7 @@
 # Simple Uploader
 
 [![Test](https://github.com/louis-she/simple-uploader/actions/workflows/go.yml/badge.svg)](https://github.com/louis-she/simple-uploader/actions/workflows/go.yml)
+[![Release](https://github.com/louis-she/simple-uploader/actions/workflows/release.yml/badge.svg)](https://github.com/louis-she/simple-uploader/actions/workflows/release.yml)
 
 This is a simple file uploader that supports resumable file uploading. It is provided as a controller of the [`Gin Web Framework`](https://github.com/gin-gonic/gin).
 
