@@ -1,11 +1,13 @@
 {
   "name": "@louis-she/simple-uploader",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "main": "./dist/simple_uploader.umd.cjs",
   "module": "./dist/simple_uploader.js",
   "types": "./dist/simple_uploader.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/simple_uploader.js",

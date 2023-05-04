@@ -36,6 +36,13 @@ interface FileMeta {
   slices: { [key: string]: Slice };
 }
 
+export class UserCanceledUploading extends Error {
+  constructor() {
+    super("User Canceled Upload");
+    this.name = "UserCanceledUploading"
+  }
+}
+
 function sha1File(file: Blob): Promise<string> {
   return new Promise((resolve, _) => {
     const reader = new FileReader();
@@ -65,6 +72,7 @@ export default class SimpleUploader {
   meta?: FileMeta | null;
   metaKey: string;
   public options: SimpleUploaderOptions;
+  halt: boolean;
 
   constructor(public file: File, options: Partial<SimpleUploaderOptions>) {
     this.options = Object.assign(
@@ -77,8 +85,11 @@ export default class SimpleUploader {
     );
     this.meta = null;
     this.metaKey = `file_meta_${this.file.name}_${this.file.size}`;
-    this.clearMeta();
     this.loadMeta();
+    this.halt = false;
+    if (this.meta) {
+      console.log("meta data loaded from local storage", this.meta);
+    }
   }
 
   clearMeta() {
@@ -94,6 +105,10 @@ export default class SimpleUploader {
         console.log(`failed to parse meta data for file ${this.file.name}`);
       }
     }
+  }
+
+  cancel() {
+    this.halt = true;
   }
 
   async upload() {
@@ -115,8 +130,19 @@ export default class SimpleUploader {
       this.saveMeta();
     }
 
-    // iterate this.meta.slices
-    for (let sliceId in this.meta!.slices) {
+    const slicesIds = Object.keys(this.meta!.slices)
+
+    async function* slicesIter() {
+      for (let sliceId in slicesIds) {
+        yield sliceId
+      }
+    }
+
+    for await (let sliceId of slicesIter()) {
+      if (this.halt) {
+        this.halt = false;
+        throw new UserCanceledUploading();  
+      }
       const slice = this.meta!.slices[sliceId];
       if (slice.status === 0) {
         const response = await this.uploadSlice(slice.sliceId);
