@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -192,7 +193,7 @@ func (f *FileController) Upload(c *gin.Context) {
 	delete(filesLock, params.FileId)
 	uploadDir := viper.GetString("uploader.upload_dir")
 	if serverFileMeta.Prefix != "" {
-		uploadDir = path.Join(path.Join(uploadDir, serverFileMeta.Prefix))
+		uploadDir = path.Join(uploadDir, serverFileMeta.Prefix)
 	}
 	os.MkdirAll(uploadDir, 0755)
 	destFile, err := os.OpenFile(path.Join(uploadDir, serverFileMeta.FileName), os.O_WRONLY|os.O_CREATE, 0644)
@@ -245,6 +246,11 @@ func (f *FileController) Create(c *gin.Context) {
 	params := CreateParams{}
 	if err := c.BindJSON(&params); err != nil {
 		logrus.Infof("failed to bind json: %v", err)
+		f.Write(c, nil, 400, 0, "")
+		return
+	}
+
+	if strings.Contains(params.Prefix, "..") {
 		f.Write(c, nil, 400, 0, "")
 		return
 	}

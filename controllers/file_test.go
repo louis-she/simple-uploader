@@ -163,6 +163,23 @@ func TestCreateFileInvalidArgs(t *testing.T) {
 	assert.Equal(http.StatusBadRequest, w.Code)
 }
 
+func TestCreateWithDoubleDotPrefix(t *testing.T) {
+	assert := assert.New(t)
+
+	params := controllers.CreateParams{
+		FileName:  "test.txt",
+		FileType:  "text/plain",
+		FileSize:  1024,
+		ChunkSize: 10,
+		Prefix:    "../xxx/",
+	}
+
+	body, _ := json.Marshal(params)
+	req, _ := http.NewRequest("POST", "/files", bytes.NewBuffer(body))
+	w := createFileWithRequest(req)
+	assert.Equal(http.StatusBadRequest, w.Code)
+}
+
 func TestCreateFileValid(t *testing.T) {
 	assert := assert.New(t)
 	file := generateRandomLargeFile(0)

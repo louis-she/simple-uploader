@@ -66,6 +66,7 @@ type SimpleUploaderOptions = {
   endpoint: string;
   onProgress?: (progress: Progress) => void;
   requestOptions?: AxiosRequestConfig;
+  prefix: string;
 };
 
 export default class SimpleUploader {
@@ -80,6 +81,7 @@ export default class SimpleUploader {
         chunkSize: 1024 * 1024 * 10,
         endpoint: "/files",
         onProgress: undefined,
+        prefix: "",
       },
       options
     );
@@ -120,6 +122,7 @@ export default class SimpleUploader {
           file_type: this.file.type,
           file_size: this.file.size,
           chunk_size: this.options.chunkSize,
+          prefix: this.options.prefix
         },
         this.options.requestOptions
       );
