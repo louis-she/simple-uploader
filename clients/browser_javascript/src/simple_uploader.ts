@@ -139,13 +139,14 @@ export default class SimpleUploader {
 
     const slicesIds = Object.keys(this.meta!.slices)
 
-    let userHalt = false
-
+    let error : Error | null = null
     await PromisePool
       .for(slicesIds)
       .withConcurrency(4)
-      .handleError(async (_error, _user, pool) => {
-        userHalt = true
+      .handleError(async (e, _user, pool) => {
+        if (e) {
+          error = e
+        }
         pool.stop();
       })
       .process(async (sliceId) => {
@@ -171,8 +172,9 @@ export default class SimpleUploader {
         }
       })
 
-    if (userHalt) {
-      throw new UserCanceledUploading()
+    if (error) {
+      console.log("throwing error: ", error)
+      throw error
     }
   }
 
