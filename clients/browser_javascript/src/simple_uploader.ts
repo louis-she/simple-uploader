@@ -95,6 +95,7 @@ export default class SimpleUploader {
   }
 
   clearMeta() {
+    this.meta = null;
     localStorage.removeItem(this.metaKey);
   }
 
