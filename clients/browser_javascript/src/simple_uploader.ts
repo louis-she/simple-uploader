@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 import camecaseKeys from "camelcase-keys";
+import { PromisePool } from '@supercharge/promise-pool'
 
 interface Progress {
   allSlice: number;
@@ -67,6 +68,7 @@ type SimpleUploaderOptions = {
   onProgress?: (progress: Progress) => void;
   requestOptions?: AxiosRequestConfig;
   prefix: string;
+  concurrent: number;
 };
 
 export default class SimpleUploader {
@@ -78,6 +80,7 @@ export default class SimpleUploader {
   constructor(public file: File, options: Partial<SimpleUploaderOptions>) {
     this.options = Object.assign(
       {
+        concurrent: 4,
         chunkSize: 1024 * 1024 * 10,
         endpoint: "/files",
         onProgress: undefined,
@@ -136,33 +139,40 @@ export default class SimpleUploader {
 
     const slicesIds = Object.keys(this.meta!.slices)
 
-    async function* slicesIter() {
-      for (let sliceId in slicesIds) {
-        yield sliceId
-      }
-    }
+    let userHalt = false
 
-    for await (let sliceId of slicesIter()) {
-      if (this.halt) {
-        this.halt = false;
-        throw new UserCanceledUploading();  
-      }
-      const slice = this.meta!.slices[sliceId];
-      if (slice.status === 0) {
-        const response = await this.uploadSlice(slice.sliceId);
-        if (response.code == 206 || response.code == 200) {
-          this.meta.slices[slice.sliceId].status = 1;
-          this.saveMeta();
+    await PromisePool
+      .for(slicesIds)
+      .withConcurrency(4)
+      .handleError(async (_error, _user, pool) => {
+        userHalt = true
+        pool.stop();
+      })
+      .process(async (sliceId) => {
+        if (this.halt) {
+          this.halt = false;
+          throw new UserCanceledUploading();
         }
-        if (this.options.onProgress) {
-          this.options.onProgress({
-            allSlice: Object.keys(this.meta!.slices).length,
-            finishedSlice: Object.values(this.meta!.slices).filter(
-              (s) => s.status === 1
-            ).length,
-          });
+        const slice = this.meta!.slices[sliceId];
+        if (slice.status === 0) {
+          const response = await this.uploadSlice(slice.sliceId);
+          if (response.code == 206 || response.code == 200) {
+            this.meta!.slices[slice.sliceId].status = 1;
+            this.saveMeta();
+          }
+          if (this.options.onProgress) {
+            this.options.onProgress({
+              allSlice: Object.keys(this.meta!.slices).length,
+              finishedSlice: Object.values(this.meta!.slices).filter(
+                (s) => s.status === 1
+              ).length,
+            });
+          }
         }
-      }
+      })
+    
+    if (userHalt) {
+      throw new UserCanceledUploading()
     }
   }
 
