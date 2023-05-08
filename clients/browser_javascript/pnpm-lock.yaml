@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@supercharge/promise-pool': ^2.4.0
   '@types/node': ^18.16.3
   axios: ^1.4.0
   camelcase-keys: ^8.0.2
@@ -9,6 +10,7 @@ specifiers:
   vite-plugin-dts: ^2.3.0
 
 dependencies:
+  '@supercharge/promise-pool': registry.npmmirror.com/@supercharge/promise-pool/2.4.0
   axios: registry.npmmirror.com/axios/1.4.0
   camelcase-keys: registry.npmmirror.com/camelcase-keys/8.0.2
 
@@ -439,6 +441,13 @@ packages:
       colors: registry.npmmirror.com/colors/1.2.5
       string-argv: registry.npmmirror.com/string-argv/0.3.1
     dev: true
+
+  registry.npmmirror.com/@supercharge/promise-pool/2.4.0:
+    resolution: {integrity: sha512-O9CMipBlq5OObdt1uKJGIzm9cdjpPWfj+a+Zw9EgWKxaMNHKC7EU7X9taj3H0EGQNLOSq2jAcOa3EzxlfHsD6w==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@supercharge/promise-pool/-/promise-pool-2.4.0.tgz}
+    name: '@supercharge/promise-pool'
+    version: 2.4.0
+    engines: {node: '>=8'}
+    dev: false
 
   registry.npmmirror.com/@ts-morph/common/0.19.0:
     resolution: {integrity: sha512-Unz/WHmd4pGax91rdIKWi51wnVUW11QttMEPpBiBgIewnc9UQIX7UDLxr5vRlqeByXCwhkF6VabSsI0raWcyAQ==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@ts-morph/common/-/common-0.19.0.tgz}

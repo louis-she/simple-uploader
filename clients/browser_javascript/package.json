@@ -1,6 +1,6 @@
 {
   "name": "@louis-she/simple-uploader",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "type": "module",
   "main": "./dist/simple_uploader.umd.cjs",
   "module": "./dist/simple_uploader.js",
@@ -30,6 +30,7 @@
     "vite-plugin-dts": "^2.3.0"
   },
   "dependencies": {
+    "@supercharge/promise-pool": "^2.4.0",
     "axios": "^1.4.0",
     "camelcase-keys": "^8.0.2"
   },
