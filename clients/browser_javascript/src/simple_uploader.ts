@@ -144,7 +144,7 @@ export default class SimpleUploader {
     await PromisePool
       .for(slicesIds)
       .withConcurrency(4)
-      .handleError(async (error, user, pool) => {
+      .handleError(async (_error, _user, pool) => {
         userHalt = true
         pool.stop();
       })
