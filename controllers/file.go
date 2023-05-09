@@ -97,10 +97,10 @@ func (f *FileController) Meta(c *gin.Context) {
 	f.Write(c, meta, 200, 0, "")
 }
 
-var filesLock map[string]*sync.Mutex
+var filesLock sync.Map
 
 func init() {
-	filesLock = make(map[string]*sync.Mutex)
+	filesLock = sync.Map{}
 }
 
 func (f *FileController) Upload(c *gin.Context) {
@@ -159,10 +159,10 @@ func (f *FileController) Upload(c *gin.Context) {
 	}
 
 	// update meta file, should be atomic
-	if _, ok := filesLock[params.FileId]; !ok {
-		filesLock[params.FileId] = &sync.Mutex{}
-	}
-	filesLock[params.FileId].Lock()
+	lockAny, _ := filesLock.LoadOrStore(params.FileId, &sync.Mutex{})
+	lock := lockAny.(*sync.Mutex)
+	lock.Lock()
+
 	content, _ = os.ReadFile(path.Join(sliceDir, "meta.json"))
 
 	json.Unmarshal(content, &serverFileMeta)
@@ -180,7 +180,7 @@ func (f *FileController) Upload(c *gin.Context) {
 		return
 	}
 
-	filesLock[params.FileId].Unlock()
+	lock.Unlock()
 	// go over the slices in meta, and check if all slices are uploaded
 	for _, slice := range serverFileMeta.Slices {
 		if slice.Status != 1 {
@@ -190,7 +190,7 @@ func (f *FileController) Upload(c *gin.Context) {
 	}
 
 	// all slices are uploaded, merge them
-	delete(filesLock, params.FileId)
+	filesLock.Delete(params.FileId)
 	uploadDir := viper.GetString("uploader.upload_dir")
 	if serverFileMeta.Prefix != "" {
 		uploadDir = path.Join(uploadDir, serverFileMeta.Prefix)
