@@ -142,7 +142,7 @@ export default class SimpleUploader {
     let error : Error | null = null
     await PromisePool
       .for(slicesIds)
-      .withConcurrency(4)
+      .withConcurrency(this.options.concurrent)
       .handleError(async (e, _user, pool) => {
         if (e) {
           error = e
