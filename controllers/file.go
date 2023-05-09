@@ -127,7 +127,7 @@ func (f *FileController) Upload(c *gin.Context) {
 
 	json.Unmarshal(content, &serverFileMeta)
 	if serverFileMeta.FileName != params.FileName || serverFileMeta.FileType != params.FileType || serverFileMeta.FileSize != params.FileSize {
-		logrus.Errorf("meta file is not matched")
+		logrus.Errorf("meta file is not matched. params %v - servers %v", params, serverFileMeta)
 		f.Write(c, nil, 422, 0, "")
 		return
 	}
