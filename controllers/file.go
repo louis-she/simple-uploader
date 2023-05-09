@@ -116,6 +116,12 @@ func (f *FileController) Upload(c *gin.Context) {
 
 	sliceDir := path.Join(viper.GetString("uploader.slice_cache_dir"), params.FileId)
 
+	// update meta file, should be atomic
+	lockAny, _ := filesLock.LoadOrStore(params.FileId, &sync.Mutex{})
+	lock := lockAny.(*sync.Mutex)
+	lock.Lock()
+	defer lock.Unlock()
+
 	// check file meta
 	var serverFileMeta FileMeta
 	content, err := ioutil.ReadFile(path.Join(sliceDir, "meta.json"))
@@ -158,11 +164,6 @@ func (f *FileController) Upload(c *gin.Context) {
 		return
 	}
 
-	// update meta file, should be atomic
-	lockAny, _ := filesLock.LoadOrStore(params.FileId, &sync.Mutex{})
-	lock := lockAny.(*sync.Mutex)
-	lock.Lock()
-
 	content, _ = os.ReadFile(path.Join(sliceDir, "meta.json"))
 
 	json.Unmarshal(content, &serverFileMeta)
@@ -180,7 +181,6 @@ func (f *FileController) Upload(c *gin.Context) {
 		return
 	}
 
-	lock.Unlock()
 	// go over the slices in meta, and check if all slices are uploaded
 	for _, slice := range serverFileMeta.Slices {
 		if slice.Status != 1 {
