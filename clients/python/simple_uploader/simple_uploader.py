@@ -48,6 +48,8 @@ class Options:
     chunk_size: Optional[int] = 1024 * 1024 * 10
     endpoint: Optional[str] = "http://127.0.0.1:8080/files"
     on_progress: Optional[Callable[[Progress], None]] = None
+    prefix: Optional[str] = ""
+    headers: Optional[Dict[str, str]] = {}
 
 
 @dataclass
@@ -82,6 +84,7 @@ class SimpleUploader:
         self.load_meta()
 
     def clear_meta(self):
+        self.meta = None
         self.meta_file.unlink()
 
     def load_meta(self):
@@ -145,6 +148,10 @@ class SimpleUploader:
             f"{self.options.endpoint}/{self.meta.file_id}/upload",
             data=form_data,
             files={"file": io.BytesIO(bytes)},
+            headers={
+                "Content-Type": "multipart/form-data",
+                **self.options.headers
+            },
         )
 
         if response.status_code >= 400:
