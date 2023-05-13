@@ -26,8 +26,6 @@ setup(
     version="0.0.14",
     description="Simple uploader python client",
     url="https://github.com/louis-she/simple-uploader",
-    long_description=read("../../README.md"),
-    long_description_content_type="text/markdown",
     author="Chenglu",
     packages=find_packages(),
     install_requires=read_requirements("requirements.txt"),

@@ -49,7 +49,7 @@ class Options:
     endpoint: Optional[str] = "http://127.0.0.1:8080/files"
     on_progress: Optional[Callable[[Progress], None]] = None
     prefix: Optional[str] = ""
-    headers: Optional[Dict[str, str]] = {}
+    headers: Optional[Dict[str, str]] = None
 
 
 @dataclass
@@ -105,6 +105,10 @@ class SimpleUploader:
                     "file_type": self.file.suffix,
                     "file_size": self.file_size,
                     "chunk_size": self.options.chunk_size,
+                    "prefix": self.options.prefix
+                },
+                headers={
+                    **(self.options.headers if self.options.headers is not None else {})
                 },
             )
             if response.status_code != 200:
@@ -147,10 +151,11 @@ class SimpleUploader:
         response = requests.post(
             f"{self.options.endpoint}/{self.meta.file_id}/upload",
             data=form_data,
-            files={"file": io.BytesIO(bytes)},
+            files={
+                "file": io.BytesIO(bytes),
+            },
             headers={
-                "Content-Type": "multipart/form-data",
-                **self.options.headers
+                **(self.options.headers if self.options.headers is not None else {})
             },
         )
 
@@ -165,7 +170,12 @@ class SimpleUploader:
         return sha1.hexdigest()
 
     def checksum(self) -> CheckResult:
-        response = requests.get(f"{self.options.endpoint}/{self.meta.file_id}/meta")
+        response = requests.get(
+            f"{self.options.endpoint}/{self.meta.file_id}/meta",
+            headers={
+                **(self.options.headers if self.options.headers is not None else {})
+            },
+        )
         server_meta = from_dict(FileMeta, response.json()["data"])
         check_result = CheckResult(0, 0, [])
         for slice_id, slice in server_meta.slices.items():
