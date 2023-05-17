@@ -223,8 +223,8 @@ func (f *FileController) Upload(c *gin.Context) {
 			f.Write(c, nil, 500, 0, "")
 			return
 		}
-		defer sliceFile.Close()
 		io.Copy(destFile, sliceFile)
+		sliceFile.Close()
 	}
 
 	// remove slice dir
