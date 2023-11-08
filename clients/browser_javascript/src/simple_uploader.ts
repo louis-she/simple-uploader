@@ -7,11 +7,6 @@ interface Progress {
   finishedSlice: number;
 }
 
-interface CheckResult {
-  successCount: number;
-  failedCount: number;
-  failedSlicesId: string[];
-}
 
 interface Response<T> {
   code: number;
@@ -66,6 +61,7 @@ type SimpleUploaderOptions = {
   chunkSize: number;
   endpoint: string;
   onProgress?: (progress: Progress) => void;
+  onCheckingSumProgress?: (progress: Progress) => void;
   requestOptions?: AxiosRequestConfig;
   prefix: string;
   concurrent: number;
@@ -222,16 +218,12 @@ export default class SimpleUploader {
     localStorage.setItem(this.metaKey, JSON.stringify(this.meta));
   }
 
-  async checksum(): Promise<CheckResult> {
+  async checksum(): Promise<void> {
     const serverMeta = await axios.get<Response<FileMeta>>(
       `${this.options.endpoint}/${this.meta!.fileId}/meta`,
       this.options.requestOptions
     );
-    let checkResult: CheckResult = {
-      successCount: 0,
-      failedCount: 0,
-      failedSlicesId: [],
-    };
+    let checksumIndex = 1;
     for (let sliceId in this.meta!.slices) {
       const slice = this.meta!.slices[sliceId];
       const sliceIdInt = parseInt(slice.sliceId);
@@ -240,13 +232,28 @@ export default class SimpleUploader {
         (sliceIdInt + 1) * this.options.chunkSize
       );
       const sha1 = await sha1File(file);
-      if (serverMeta.data.data.slices[sliceId].sha1 === sha1) {
-        checkResult.successCount += 1;
-      } else {
-        checkResult.failedCount += 1;
-        checkResult.failedSlicesId.push(sliceId);
+
+      if (serverMeta.data.data.slices[sliceId].sha1 !== sha1) {
+        console.log(`slice ${sliceId} sha1 mismatch, reupload the slice`)
+        let response = await this.uploadSlice(sliceId);
+        if (response.code == 206 || response.code == 200) {
+          console.log(`slice ${sliceId} reupload success`)
+        } else {
+          console.log(`slice ${sliceId} reupload failed`)
+          // set the slice as not uploaded and then raise error
+          this.meta!.slices[sliceId].status = 0;
+          this.saveMeta();
+          throw new Error("checksum failed")
+        }
+      }
+
+      if (this.options.onCheckingSumProgress) {
+        this.options.onCheckingSumProgress({
+          allSlice: Object.keys(this.meta!.slices).length,
+          finishedSlice: checksumIndex,
+        });
+        checksumIndex += 1;
       }
     }
-    return checkResult;
   }
 }
