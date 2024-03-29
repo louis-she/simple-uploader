@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"os"
+	"os/exec"
 	"path"
 	"strconv"
 	"strings"
@@ -224,13 +225,16 @@ func (f *FileController) UploadV2(c *gin.Context) {
 	err = os.Rename(targetFilePath, path.Join(uploadDir, serverFileMeta.FileName))
 	if err != nil {
 		logrus.Errorf("failed to move target file: %v", err)
-		f.Write(c, nil, 500, 0, "")
-		return
+		// fall back using linux move
+		err = exec.Command("mv", targetFilePath, path.Join(uploadDir, serverFileMeta.FileName)).Run()
+		if err != nil {
+			logrus.Errorf("failed to move target file: %v", err)
+			f.Write(c, nil, 500, 0, "")
+			return
+		}
 	}
-
 	// 这里保留 meta 文件不删除
 	// ...
-
 	f.Write(c, nil, 200, 0, "")
 }
 
