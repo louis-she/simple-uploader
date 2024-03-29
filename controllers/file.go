@@ -221,7 +221,12 @@ func (f *FileController) UploadV2(c *gin.Context) {
 	os.MkdirAll(uploadDir, 0755)
 
 	// move target file to upload dir
-	os.Rename(targetFilePath, path.Join(uploadDir, serverFileMeta.FileName))
+	err = os.Rename(targetFilePath, path.Join(uploadDir, serverFileMeta.FileName))
+	if err != nil {
+		logrus.Errorf("failed to move target file: %v", err)
+		f.Write(c, nil, 500, 0, "")
+		return
+	}
 
 	// 这里保留 meta 文件不删除
 	// ...
