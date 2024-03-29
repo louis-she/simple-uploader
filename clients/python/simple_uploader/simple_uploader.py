@@ -50,6 +50,7 @@ class Options:
     on_progress: Optional[Callable[[Progress], None]] = None
     prefix: Optional[str] = ""
     headers: Optional[Dict[str, str]] = None
+    use_v2: Optional[bool] = True
 
 
 @dataclass
@@ -105,7 +106,7 @@ class SimpleUploader:
                     "file_type": self.file.suffix,
                     "file_size": self.file_size,
                     "chunk_size": self.options.chunk_size,
-                    "prefix": self.options.prefix
+                    "prefix": self.options.prefix,
                 },
                 headers={
                     **(self.options.headers if self.options.headers is not None else {})
@@ -149,7 +150,7 @@ class SimpleUploader:
             "chunk_size": self.options.chunk_size,
         }
         response = requests.post(
-            f"{self.options.endpoint}/{self.meta.file_id}/upload",
+            f"{self.options.endpoint}/{self.meta.file_id}/upload{'_v2' if self.options.use_v2 else ''}",
             data=form_data,
             files={
                 "file": io.BytesIO(bytes),

@@ -65,6 +65,7 @@ type SimpleUploaderOptions = {
   requestOptions?: AxiosRequestConfig;
   prefix: string;
   concurrent: number;
+  useV2?: boolean;
 };
 
 export default class SimpleUploader {
@@ -81,6 +82,7 @@ export default class SimpleUploader {
         endpoint: "/files",
         onProgress: undefined,
         prefix: "",
+        useV2: true,
       },
       options
     );
@@ -135,7 +137,7 @@ export default class SimpleUploader {
 
     const slicesIds = Object.keys(this.meta!.slices)
 
-    let error : Error | null = null
+    let error: Error | null = null
     await PromisePool
       .for(slicesIds)
       .withConcurrency(this.options.concurrent)
@@ -193,7 +195,7 @@ export default class SimpleUploader {
     formData.append("chunk_size", this.options.chunkSize.toString());
 
     const response = await axios.post<Response<string>>(
-      `${this.options.endpoint}/${this.meta!.fileId}/upload`,
+      `${this.options.endpoint}/${this.meta!.fileId}/upload${this.options.useV2 ? '_v2' : ''}`,
       formData,
       {
         ...this.options.requestOptions,

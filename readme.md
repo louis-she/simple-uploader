@@ -16,7 +16,7 @@ import (
 
 r := gin.Default()
 
-controllers.Attach(r, "/")  
+controllers.Attach(r, "/")
 ```
 
 # Clients
