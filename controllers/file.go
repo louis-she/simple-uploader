@@ -222,16 +222,11 @@ func (f *FileController) UploadV2(c *gin.Context) {
 	os.MkdirAll(uploadDir, 0755)
 
 	// move target file to upload dir
-	err = os.Rename(targetFilePath, path.Join(uploadDir, serverFileMeta.FileName))
+	err = exec.Command("mv", targetFilePath, path.Join(uploadDir, serverFileMeta.FileName)).Run()
 	if err != nil {
 		logrus.Errorf("failed to move target file: %v", err)
-		// fall back using linux move
-		err = exec.Command("mv", targetFilePath, path.Join(uploadDir, serverFileMeta.FileName)).Run()
-		if err != nil {
-			logrus.Errorf("failed to move target file: %v", err)
-			f.Write(c, nil, 500, 0, "")
-			return
-		}
+		f.Write(c, nil, 500, 0, "")
+		return
 	}
 	// 这里保留 meta 文件不删除
 	// ...
