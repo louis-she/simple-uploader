@@ -87,7 +87,7 @@ go run ./mockserver
 
 ```bash
 # in clients/browser_javascript
-pnpm isntall
+pnpm install
 pnpm run dev
 ```
 
